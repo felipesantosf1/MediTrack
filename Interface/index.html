@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="app-container">
+
+        <!-- Lista de medicamentos -->
+        <section class="medic-list">
+            <div class="medic-item">
+                <!-- Remédios adicionados vão aparecer aqui -->
+            </div> 
+        </section>
+
+        <!-- Botão de adicionar -->
+        <section class="add-medic">
+            <button class="add-btn">+ Adicionar Remédio</button>
+        </section>
+
+    </main>
+
+    <!-- Modal para adicionar remédio -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h2>Adicionar Remédio</h2>
+            <input type="text" id="medicName" maxlength="30" placeholder="Nome do remédio">
+            <input type="time" id="medicTime">
+            <div class="modal-buttons">
+                <button id="cancelBtn">Cancelar</button>
+                <button id="saveBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+<script src="code.js"></script>
+</body>
+</html>
