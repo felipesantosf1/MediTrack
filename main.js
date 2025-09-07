@@ -1,17 +1,50 @@
-const { app, BrowserWindow, Tray, Menu } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, ipcMain, Tray, Menu } = require("electron");
+const path = require("path");
+const fs = require("fs");
 
 let mainWindow;
 let tray;
+
+const dataPath = path.join(__dirname, "data", "medicamentos.json");
+
+function loadMedicamentos() {
+    if (!fs.existsSync(dataPath)) {
+        fs.writeFileSync(dataPath, JSON.stringify({
+            medicamentos: []
+        }, null, 2));
+    }
+
+    const data = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
+    return data;
+}
+
+function saveMedicamentos(data) {
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+}
+
+
+function saveMedicamentos(data) {
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+}
+
+// ----------------- IPC -----------------
+ipcMain.handle("load-meds", () => {
+    return loadMedicamentos();
+});
+
+ipcMain.on("save-meds", (event, data) => {
+    saveMedicamentos(data);
+});
 
 function Carregar_Janela() {
     mainWindow = new BrowserWindow({
         width: 350,
         height: 500,
         autoHideMenuBar: true,
-        // opcional: não aparece na barra de tarefas
+        icon: path.join(__dirname, "img", "pilula.png"),
         skipTaskbar: false,
         webPreferences: {
+            preload: path.join(__dirname, "preload.js"),
             nodeIntegration: true,
             contextIsolation: false
         }
@@ -28,9 +61,9 @@ function Carregar_Janela() {
     });
 }
 
-// Cria o ícone na bandeja
+// ----------------- TRAY -----------------
 function Criar_Tray() {
-    tray = new Tray(path.join(__dirname, 'pilula.png')); // coloque o caminho da sua imagem aqui
+    tray = new Tray(path.join(__dirname, 'img/pilula.png')); // coloque o caminho da sua imagem aqui
 
     const contextMenu = Menu.buildFromTemplate([
         {
