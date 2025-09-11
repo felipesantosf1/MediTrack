@@ -1,101 +1,72 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu } = require("electron");
 const path = require("path");
-const fs = require("fs");
+const { loadMedicamentos, saveMedicamentos } = require("./src/backend/storage");
+const { startNotifications } = require("./src/backend/notifications");
 
 let mainWindow;
 let tray;
-
-const dataPath = path.join(__dirname, "data", "medicamentos.json");
-
-function loadMedicamentos() {
-    if (!fs.existsSync(dataPath)) {
-        fs.writeFileSync(dataPath, JSON.stringify({
-            medicamentos: []
-        }, null, 2));
-    }
-
-    const data = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
-    return data;
-}
-
-function saveMedicamentos(data) {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-}
-
-
-function saveMedicamentos(data) {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-}
+let appData = { medicamentos: [] };
 
 // ----------------- IPC -----------------
-ipcMain.handle("load-meds", () => {
-    return loadMedicamentos();
-});
+ipcMain.handle("load-meds", () => appData);
 
 ipcMain.on("save-meds", (event, data) => {
-    saveMedicamentos(data);
+    appData = data;
+    saveMedicamentos(appData);
 });
 
-function Carregar_Janela() {
+// ----------------- JANELA -----------------
+function createWindow() {
+    appData = loadMedicamentos();
+
     mainWindow = new BrowserWindow({
         width: 350,
         height: 500,
+        resizable: false,
+        maximizable: false,
+        minimizable: true,
         autoHideMenuBar: true,
-        icon: path.join(__dirname, "img", "pilula.png"),
+        icon: path.join(__dirname, "img/pilula.ico"),
         skipTaskbar: false,
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
-            nodeIntegration: true,
-            contextIsolation: false
+            nodeIntegration: false,
+            contextIsolation: true
         }
     });
 
     mainWindow.loadFile("interface/index.html");
 
-    // Evita fechar a janela, só esconde
-    mainWindow.on('close', (event) => {
+    mainWindow.on("close", (event) => {
         if (!app.isQuiting) {
             event.preventDefault();
             mainWindow.hide();
         }
     });
+
+    startNotifications(() => appData.medicamentos);
 }
 
 // ----------------- TRAY -----------------
-function Criar_Tray() {
-    tray = new Tray(path.join(__dirname, 'img/pilula.png')); // coloque o caminho da sua imagem aqui
+function createTray() {
+    tray = new Tray(path.join(__dirname, "img/pilula.ico"));
 
     const contextMenu = Menu.buildFromTemplate([
-        {
-            label: 'Abrir MediTrack',
-            click: () => {
-                mainWindow.show();
-            }
-        },
-        {
-            label: 'Sair',
-            click: () => {
-                app.isQuiting = true;
-                app.quit();
-            }
-        }
+        { label: "Abrir MedicAlert", click: () => mainWindow.show() },
+        { label: "Sair", click: () => { app.isQuiting = true; app.quit(); } }
     ]);
 
-    tray.setToolTip('MediTrack');
+    tray.setToolTip("MedicAlert");
     tray.setContextMenu(contextMenu);
 
-    // Clique no ícone mostra/oculta a janela
-    tray.on('click', () => {
+    tray.on("click", () => {
         mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
     });
 }
 
 app.whenReady().then(() => {
-    Carregar_Janela();
-    Criar_Tray();
+    createWindow();
+    createTray();
 });
 
-// Garante que o app não feche no Windows/macOS quando todas as janelas forem fechadas
-app.on('window-all-closed', (e) => {
-    e.preventDefault();
-});
+app.on("window-all-closed", (e) => e.preventDefault());

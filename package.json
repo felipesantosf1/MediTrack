@@ -1,16 +1,29 @@
 {
-  "name": "meditrack",
+  "name": "medicalert",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "electron-packager . MedicAlert --platform=win32 --arch=x64 --icon=img/pilula.ico --out=dist --overwrite"
   },
   "keywords": [],
-  "author": "",
+  "author": "Felipe Santos",
   "license": "ISC",
+  "build": {
+    "appId": "MedicAlert",
+    "win": {
+      "icon": "img/pilula.ico"
+    }
+  },
   "devDependencies": {
-    "electron": "^38.0.0"
+    "@electron/packager": "^18.4.4",
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12",
+    "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "node-notifier": "^10.0.1",
+    "sortablejs": "^1.15.6"
   }
 }
